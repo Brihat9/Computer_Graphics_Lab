@@ -1,0 +1,310 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+
+#include "Unit1.h"
+#include<math.h>
+#define PI 3.1415926535
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+        : TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+
+int xo,yo;
+float x[3],y[3];
+float xc,yc;
+float x_temp,y_temp;
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+        x[0] = StrToInt(Form1->Edit1->Text);
+        y[0] = StrToInt(Form1->Edit2->Text);
+        x[1] = StrToInt(Form1->Edit3->Text);
+        y[1] = StrToInt(Form1->Edit4->Text);
+        x[2] = StrToInt(Form1->Edit5->Text);
+        y[2] = StrToInt(Form1->Edit6->Text);
+
+        for(int i=0; i<3; i++)
+        {
+                x[i]+=xo;
+                y[i]=yo-y[i];
+        }
+
+        Canvas->MoveTo(x[0],y[0]);
+        Canvas->LineTo(x[1],y[1]);
+
+       // Canvas->MoveTo(x[1],y[1]);
+        Canvas->LineTo(x[2],y[2]);
+
+       // Canvas->MoveTo(x[2],y[2]);
+        Canvas->LineTo(x[0],y[0]);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button2Click(TObject *Sender)
+{
+        int tx = StrToInt(Form1->Edit7->Text);
+        int ty = StrToInt(Form1->Edit8->Text);
+
+        int xt[3],yt[3];
+        for(int i=0; i<3; i++)
+        {
+                xt[i] = x[i] + tx;
+                yt[i] = y[i] - ty;
+        }
+
+        Canvas->MoveTo(xt[0],yt[0]);
+        Canvas->LineTo(xt[1],yt[1]);
+
+        Canvas->MoveTo(xt[1],yt[1]);
+        Canvas->LineTo(xt[2],yt[2]);
+
+        Canvas->MoveTo(xt[2],yt[2]);
+        Canvas->LineTo(xt[0],yt[0]);
+}
+//---------------------------------------------------------------------------
+void __fastcall TForm1::Button3Click(TObject *Sender)
+{
+        //axes
+        xo = StrToInt(Form1->Edit12->Text);
+        yo = StrToInt(Form1->Edit13->Text);
+        Canvas->MoveTo(xo,0);
+        Canvas->LineTo(xo,2*yo);
+        Canvas->MoveTo(0,yo);
+        Canvas->LineTo(2*xo,yo);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button4Click(TObject *Sender)
+{
+        //scaling
+        float xs[3], ys[3];
+        float sx = StrToFloat(Form1->Edit9->Text);
+        float sy = StrToFloat(Form1->Edit10->Text);
+
+        xc = 0;
+        yc = 0;
+
+        for(int i=0; i<3; i++)
+        {
+                xc+=x[i];
+                yc+=y[i];
+        }
+
+        xc/=3;
+        yc/=3;
+
+        for(int i=0; i<3; i++)
+        {
+                xs[i] = x[i] - xc;      //translate
+                xs[i] *= sx;            //scale
+                xs[i] += xc;            //back translate
+
+                ys[i] = y[i] - yc;
+                ys[i] *= sy;
+                ys[i] += yc;
+        }
+
+        Canvas->MoveTo(xs[0],ys[0]);
+        Canvas->LineTo(xs[1],ys[1]);
+
+        Canvas->MoveTo(xs[1],ys[1]);
+        Canvas->LineTo(xs[2],ys[2]);
+
+        Canvas->MoveTo(xs[2],ys[2]);
+        Canvas->LineTo(xs[0],ys[0]);
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button5Click(TObject *Sender)
+{
+        //rotation wrt centroid     clockwise
+        float angle = StrToFloat(Form1->Edit11->Text);
+        angle *= (PI/180);
+
+        xc = 0;
+        yc = 0;
+
+        for(int i=0; i<3; i++)
+        {
+                xc+=x[i];
+                yc+=y[i];
+        }
+
+        xc/=3;
+        yc/=3;
+
+        float xr[3], yr[3];
+
+        for(int i=0; i<3; i++)
+        {
+                x_temp = x[i] - xc;      //translate
+                y_temp = y[i] - yc;
+
+                //rotate wrt centroid
+                xr[i] = x_temp * cos(angle) - y_temp * sin(angle);
+                yr[i] = x_temp * sin(angle) + y_temp * cos(angle);
+
+                xr[i] += xc;            //back translate
+                yr[i] += yc;
+        }
+
+        Canvas->MoveTo(xr[0],yr[0]);
+        Canvas->LineTo(xr[1],yr[1]);
+
+        Canvas->MoveTo(xr[1],yr[1]);
+        Canvas->LineTo(xr[2],yr[2]);
+
+        Canvas->MoveTo(xr[2],yr[2]);
+        Canvas->LineTo(xr[0],yr[0]);
+
+}
+
+void __fastcall TForm1::Button6Click(TObject *Sender)
+{
+        //rotation wrt origin clockwise
+        float angle = StrToFloat(Form1->Edit11->Text);
+        angle *= PI/180;
+
+        float xr[3], yr[3];
+
+        for(int i=0; i<3; i++)
+        {
+                x_temp = x[i] - xo;      //translate
+                y_temp = y[i] - yo;
+
+                //rotate wrt origin
+                xr[i] = x_temp * cos(angle) - y_temp * sin(angle);
+                yr[i] = x_temp * sin(angle) + y_temp * cos(angle);
+
+                xr[i] += xo;            //back translate
+                yr[i] += yo;
+        }
+
+        Canvas->MoveTo(xr[0],yr[0]);
+        Canvas->LineTo(xr[1],yr[1]);
+
+        Canvas->MoveTo(xr[1],yr[1]);
+        Canvas->LineTo(xr[2],yr[2]);
+
+        Canvas->MoveTo(xr[2],yr[2]);
+        Canvas->LineTo(xr[0],yr[0]);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TForm1::Button7Click(TObject *Sender)
+{
+        //scaling wrt origin
+        float xs[3], ys[3];
+        float sx = StrToFloat(Form1->Edit9->Text);
+        float sy = StrToFloat(Form1->Edit10->Text);
+
+        for(int i=0; i<3; i++)
+        {
+                xs[i] = x[i] - xo;      //translate
+                xs[i] *= sx;            //scale
+                xs[i] += xo;            //back translate
+
+                ys[i] = y[i] - yo;
+                ys[i] *= sy;
+                ys[i] += yo;
+        }
+
+        Canvas->MoveTo(xs[0],ys[0]);
+        Canvas->LineTo(xs[1],ys[1]);
+
+        Canvas->MoveTo(xs[1],ys[1]);
+        Canvas->LineTo(xs[2],ys[2]);
+
+        Canvas->MoveTo(xs[2],ys[2]);
+        Canvas->LineTo(xs[0],ys[0]);
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button8Click(TObject *Sender)
+{
+        //rotation wrt centroid counter-clockwise
+        float angle = StrToFloat(Form1->Edit11->Text);
+        angle *= (PI/180);
+
+        xc = 0;
+        yc = 0;
+
+        for(int i=0; i<3; i++)
+        {
+                xc+=x[i];
+                yc+=y[i];
+        }
+
+        xc/=3;
+        yc/=3;
+
+        float xr[3], yr[3];
+
+        for(int i=0; i<3; i++)
+        {
+                x_temp = x[i] - xc;      //translate
+                y_temp = y[i] - yc;
+
+                //rotate wrt centroid
+                xr[i] = x_temp * cos(angle) + y_temp * sin(angle);
+                yr[i] = y_temp * cos(angle) - x_temp * sin(angle);
+
+                xr[i] += xc;            //back translate
+                yr[i] += yc;
+        }
+
+        Canvas->MoveTo(xr[0],yr[0]);
+        Canvas->LineTo(xr[1],yr[1]);
+
+        Canvas->MoveTo(xr[1],yr[1]);
+        Canvas->LineTo(xr[2],yr[2]);
+
+        Canvas->MoveTo(xr[2],yr[2]);
+        Canvas->LineTo(xr[0],yr[0]);
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button9Click(TObject *Sender)
+{
+        //rotation wrt origin  counter-clockwise
+        float angle = StrToFloat(Form1->Edit11->Text);
+        angle *= PI/180;
+
+        float xr[3], yr[3];
+
+        for(int i=0; i<3; i++)
+        {
+                x_temp = x[i] - xo;      //translate
+                y_temp = y[i] - yo;
+
+                //rotate wrt origin
+                xr[i] = x_temp * cos(angle) + y_temp * sin(angle);
+                yr[i] = y_temp * cos(angle) - x_temp * sin(angle);
+
+                xr[i] += xo;            //back translate
+                yr[i] += yo;
+        }
+
+        Canvas->MoveTo(xr[0],yr[0]);
+        Canvas->LineTo(xr[1],yr[1]);
+
+        Canvas->MoveTo(xr[1],yr[1]);
+        Canvas->LineTo(xr[2],yr[2]);
+
+        Canvas->MoveTo(xr[2],yr[2]);
+        Canvas->LineTo(xr[0],yr[0]);
+
+}
+//---------------------------------------------------------------------------
+
